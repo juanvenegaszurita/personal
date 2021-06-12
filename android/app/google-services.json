@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "606968123431",
+    "project_id": "castor-6dc45",
+    "storage_bucket": "castor-6dc45.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:606968123431:android:678638a6ded45a3fe9fe02",
+        "android_client_info": {
+          "package_name": "com.example.personal"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "606968123431-gnrgrrcdradpbars2aoq05ijhhtjcoii.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyASEbGAcxlHh8m-YyHU68mTN2ApfnixAhs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "606968123431-gnrgrrcdradpbars2aoq05ijhhtjcoii.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
