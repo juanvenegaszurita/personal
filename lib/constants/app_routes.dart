@@ -1,4 +1,6 @@
+// get
 import 'package:get/get.dart';
+// personal
 import 'package:personal/ui/private/private.dart';
 import 'package:personal/ui/ui.dart';
 import 'package:personal/ui/auth/auth.dart';
@@ -14,5 +16,7 @@ class AppRoutes {
     GetPage(name: '/reset-password', page: () => ResetPasswordUI()),
     GetPage(name: '/update-profile', page: () => UpdateProfileUI()),
     GetPage(name: '/AccountsUI', page: () => AccountsUI()),
+    GetPage(name: '/ChartUI', page: () => ChartUI()),
+    GetPage(name: '/PasswordUI', page: () => PasswordUI()),
   ];
 }

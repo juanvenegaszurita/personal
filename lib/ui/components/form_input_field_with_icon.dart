@@ -23,7 +23,8 @@ class FormInputFieldWithIcon extends StatelessWidget {
       this.minLines = 1,
       this.maxLines,
       required this.onChanged,
-      required this.onSaved});
+      required this.onSaved,
+      this.enabled = true});
 
   final TextEditingController controller;
   final IconData iconPrefix;
@@ -35,10 +36,12 @@ class FormInputFieldWithIcon extends StatelessWidget {
   final int? maxLines;
   final void Function(String) onChanged;
   final void Function(String?)? onSaved;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      enabled: enabled,
       decoration: InputDecoration(
         filled: true,
         prefixIcon: Icon(iconPrefix),

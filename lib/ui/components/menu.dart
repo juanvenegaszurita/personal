@@ -22,6 +22,8 @@ class Menu extends StatelessWidget {
     final List<Map<String, dynamic>> listMenuData = [
       {"title": "home.title".tr, "page": HomeUI()},
       {"title": "accounts.title".tr, "page": AccountsUI()},
+      {"title": "chart.title".tr, "page": ChartUI()},
+      {"title": "password.title".tr, "page": PasswordUI()},
     ];
     final List<Widget> listMenu = [
       DrawerHeader(

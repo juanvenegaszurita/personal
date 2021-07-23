@@ -8,3 +8,6 @@ export 'dropdown_picker.dart';
 export 'dropdown_picker_with_icon.dart';
 export 'avatar.dart';
 export 'loading.dart';
+export 'menu.dart';
+export 'all_chart.dart';
+export 'segmented_selector.dart';

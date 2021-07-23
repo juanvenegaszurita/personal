@@ -3,28 +3,12 @@ import 'package:get/get.dart';
 import 'package:personal/ui/components/dropdown_picker.dart';
 import 'package:personal/ui/components/menu.dart';
 import 'package:personal/controllers/private/accounts_controller.dart';
-import 'package:personal/models/menu_option_model.dart';
 import 'package:intl/intl.dart';
 import 'package:recase/recase.dart';
+import 'package:personal/helpers/general.dart';
+import 'package:personal/ui/components/form_vertical_spacing.dart';
 
 class AccountsUI extends StatelessWidget {
-  List<String> titulos = [
-    "accounts.title".tr,
-    "accounts.january".tr,
-    "accounts.february".tr,
-    "accounts.march".tr,
-    "accounts.april".tr,
-    "accounts.may".tr,
-    "accounts.june".tr,
-    "accounts.july".tr,
-    "accounts.august".tr,
-    "accounts.september".tr,
-    "accounts.october".tr,
-    "accounts.november".tr,
-    "accounts.december".tr,
-    "accounts.total".tr,
-  ];
-
   @override
   Widget build(BuildContext context) {
     return GetBuilder<AccountsController>(
@@ -72,45 +56,26 @@ class AccountsUI extends StatelessWidget {
   }
 
   filtros() {
-    List<MenuOptionsModel> propietario = [
-      MenuOptionsModel(key: "", value: "accounts.selectAll".tr),
-      MenuOptionsModel(key: "JUAN_VENEGAS", value: "Juan Venegas"),
-      MenuOptionsModel(key: "MARCELA_ZURITA", value: "Marcela Zurita"),
-    ];
-
-    List<MenuOptionsModel> anios = List<MenuOptionsModel>.generate(
-      (DateTime.now().year - 2019),
-      (i) => MenuOptionsModel(key: "${i + 2020}", value: "${i + 2020}"),
-    );
-
-    List<MenuOptionsModel> meses = [
-      MenuOptionsModel(key: "", value: "accounts.selectAll".tr),
-    ];
-    titulos.forEach((element) {
-      if (!["accounts.title".tr, "accounts.total".tr].contains(element)) {
-        meses.add(MenuOptionsModel(key: element, value: element));
-      }
-    });
     return GetBuilder<AccountsController>(
       builder: (controller) => Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           DropdownPicker(
-            menuOptions: anios,
+            menuOptions: aniosMOM,
             selectedOption: controller.currentAnio,
             onChanged: (value) async {
               controller.updateAnio(value!);
             },
           ),
           DropdownPicker(
-            menuOptions: propietario,
+            menuOptions: propietarioMOM,
             selectedOption: controller.currentPropietario,
             onChanged: (value) async {
               controller.updatePropietario(value!);
             },
           ),
           DropdownPicker(
-            menuOptions: meses,
+            menuOptions: mesesMOM,
             selectedOption: controller.currentTitulo,
             onChanged: (value) async {
               controller.updateTitulo(value!);
@@ -122,101 +87,120 @@ class AccountsUI extends StatelessWidget {
   }
 
   tableCuentas(context, data) {
-    return GetBuilder<AccountsController>(builder: (controller) {
-      NumberFormat f = new NumberFormat("#,##0", "es_es");
-      List<DataRow> dataRow = [];
-      var totales = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    return GetBuilder<AccountsController>(
+      id: "tableCuentas",
+      builder: (controller) {
+        NumberFormat f = new NumberFormat("#,##0", "es_es");
+        List<DataRow> dataRow = [];
+        var totales = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
-      // Títulos
-      int indexMes = titulos.indexOf(controller.currentTitulo);
-      List<DataColumn> dataColumn = [];
-      if (controller.currentTitulo != "") {
-        [
-          "accounts.title".tr,
-          controller.currentTitulo,
-        ].forEach((element) {
-          dataColumn.add(DataColumn(
-            label: Text(
-              element,
-            ),
-          ));
-        });
-      } else {
-        titulos.forEach((titulo) {
-          dataColumn.add(DataColumn(
-            label: Text(
-              titulo,
-            ),
-          ));
-        });
-      }
-
-      // data table
-      data.forEach((keyData, valueData) {
-        List<DataCell> dataCell = [];
-        Map<String, dynamic> cuentas = valueData as Map<String, dynamic>;
-        int total = 0;
-
-        cuentas.forEach((keyCuentas, valueCuentas) {
-          dataCell
-              .add(dataCellColor(context, true, ReCase(keyCuentas).titleCase));
-          List<dynamic> cuentas = valueCuentas as List<dynamic>;
-          cuentas.asMap().forEach((index, element) {
-            Map<String, dynamic> cuenta = element as Map<String, dynamic>;
-            int monto = cuenta['MONTO'].runtimeType == 'int'
-                ? cuenta['MONTO']
-                : cuenta['MONTO'].toInt();
-            total += monto;
-            totales[index] += monto;
-            if (indexMes == -1) {
-              dataCell
-                  .add(dataCellColor(context, false, "\$ " + f.format(monto)));
-            } else {
-              if ((index + 1) == indexMes) {
-                dataCell.add(
-                    dataCellColor(context, false, "\$ " + f.format(monto)));
-              }
-            }
+        // Títulos
+        int indexMes = titulos.indexOf(controller.currentTitulo);
+        List<DataColumn> dataColumn = [];
+        if (controller.currentTitulo != "") {
+          [
+            "accounts.title".tr,
+            controller.currentTitulo,
+          ].forEach((element) {
+            dataColumn.add(DataColumn(
+              label: Text(
+                element,
+              ),
+            ));
           });
+        } else {
+          titulos.forEach((titulo) {
+            dataColumn.add(DataColumn(
+              label: Text(
+                titulo,
+              ),
+            ));
+          });
+        }
+
+        // data table
+        data.forEach((keyData, valueData) {
+          List<DataCell> dataCell = [];
+          Map<String, dynamic> cuentas = valueData as Map<String, dynamic>;
+          int total = 0;
+
+          cuentas.forEach((keyCuentas, valueCuentas) {
+            dataCell.add(
+              dataCellColor(
+                context,
+                true,
+                ReCase(keyCuentas).titleCase,
+              ),
+            );
+            List<dynamic> cuentas = valueCuentas as List<dynamic>;
+            cuentas.asMap().forEach((index, element) {
+              Map<String, dynamic> cuenta = element as Map<String, dynamic>;
+              int monto = cuenta['MONTO'].runtimeType == 'int'
+                  ? cuenta['MONTO']
+                  : cuenta['MONTO'].toInt();
+              total += monto;
+              totales[index] += monto;
+              String srtMonto = "\$ " + f.format(monto);
+              Map<String, dynamic> dataEdit = {
+                "id": cuenta['ID'],
+                "key": keyData,
+                "mes": (index + 1),
+                "anio": controller.currentAnio,
+                "monto": "",
+              };
+
+              if (indexMes == -1) {
+                dataCell.add(dataCellColor(context, false, srtMonto,
+                    dataEdit: dataEdit, controller: controller));
+              } else {
+                if ((index + 1) == indexMes)
+                  dataCell.add(dataCellColor(context, false, srtMonto,
+                      dataEdit: dataEdit, controller: controller));
+              }
+            });
+          });
+
+          if (indexMes == -1) {
+            dataCell.add(dataCellColor(context, true, "\$ " + f.format(total)));
+          }
+          dataRow.add(DataRow(cells: dataCell));
         });
 
+        // footer table
+        List<DataCell> dataCell = [
+          dataCellColor(context, true, 'general.total'.tr)
+        ];
+        int totalAnual = 0;
+        totales.asMap().forEach((index, monto) {
+          if (indexMes == -1) {
+            dataCell
+                .add(dataCellColor(context, false, "\$ " + f.format(monto)));
+            totalAnual += monto;
+          } else if (indexMes == (index + 1)) {
+            dataCell
+                .add(dataCellColor(context, false, "\$ " + f.format(monto)));
+          }
+        });
         if (indexMes == -1)
-          dataCell.add(dataCellColor(context, true, "\$ " + f.format(total)));
+          dataCell
+              .add(dataCellColor(context, false, "\$ " + f.format(totalAnual)));
+
         dataRow.add(DataRow(
+          color: colorTitle(context),
           cells: dataCell,
         ));
-      });
 
-      // footer table
-      List<DataCell> dataCell = [dataCellColor(context, true, "Total")];
-      int totalAnual = 0;
-      totales.asMap().forEach((index, monto) {
-        if (indexMes == -1) {
-          dataCell.add(dataCellColor(context, false, "\$ " + f.format(monto)));
-          totalAnual += monto;
-        } else if (indexMes == (index + 1)) {
-          dataCell.add(dataCellColor(context, false, "\$ " + f.format(monto)));
-        }
-      });
-      if (indexMes == -1)
-        dataCell
-            .add(dataCellColor(context, false, "\$ " + f.format(totalAnual)));
+        DataTable dataTable = DataTable(
+          columns: dataColumn,
+          rows: dataRow,
+        );
 
-      dataRow.add(DataRow(
-        color: colorTitle(context),
-        cells: dataCell,
-      ));
-
-      DataTable dataTable = DataTable(
-        columns: dataColumn,
-        rows: dataRow,
-      );
-
-      return Container(
-        color: Theme.of(context).colorScheme.primary.withOpacity(0.08),
-        child: dataTable,
-      );
-    });
+        return Container(
+          color: Theme.of(context).colorScheme.primary.withOpacity(0.08),
+          child: dataTable,
+        );
+      },
+    );
   }
 
   colorTitle(context) {
@@ -226,7 +210,16 @@ class AccountsUI extends StatelessWidget {
     });
   }
 
-  DataCell dataCellColor(context, isTitle, String dato) {
+  DataCell dataCellColor(
+    context,
+    isTitle,
+    String dato, {
+    Map<String, dynamic>? dataEdit,
+    AccountsController? controller,
+  }) {
+    bool isAdmin = controller?.authController.admin.value != null
+        ? controller!.authController.admin.value
+        : false;
     return DataCell(
       Container(
         color: isTitle
@@ -236,6 +229,82 @@ class AccountsUI extends StatelessWidget {
         width: double.infinity,
         height: double.infinity,
       ),
+      showEditIcon: isAdmin,
+      onLongPress: () {
+        if (isAdmin && dataEdit != null) {
+          // delete
+          if (dataEdit["id"] != "") {
+            dialog(
+              context: context,
+              title: 'accounts.delete'.tr,
+              content: Text('accounts.questionDelete'.tr),
+              onPressed: () async =>
+                  await controller.deleteCuenta(id: dataEdit["id"].toString()),
+            );
+          } else {
+            dialog(
+              context: context,
+              title: 'accounts.insert'.tr,
+              content: Container(
+                height: 100,
+                child: Column(
+                  children: [
+                    FormVerticalSpace(),
+                    TextField(
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'general.amount'.tr,
+                      ),
+                      onChanged: (value) {
+                        controller.updateMonto(value);
+                      },
+                      keyboardType: TextInputType.number,
+                    ),
+                  ],
+                ),
+              ),
+              onPressed: () async => await controller.insertCuenta(
+                id: dataEdit["key"],
+                anio: dataEdit["anio"],
+                mes: dataEdit["mes"],
+                monto: controller.currentMonto,
+              ),
+            );
+          }
+        }
+      },
+    );
+  }
+
+  dialog({
+    context: BuildContext,
+    title: String,
+    content: Widget,
+    Future Function()? onPressed,
+  }) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: content,
+          actions: [
+            TextButton(
+              child: Text('general.cancel'.tr),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('general.accept'.tr),
+              onPressed: () async {
+                await onPressed!.call();
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

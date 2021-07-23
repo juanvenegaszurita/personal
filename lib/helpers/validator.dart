@@ -13,6 +13,15 @@ class Validator {
       return null;
   }
 
+  String? emailEmpty(String? value) {
+    String pattern = r'^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+';
+    RegExp regex = RegExp(pattern);
+    if (![null, ""].contains(value) && !regex.hasMatch(value!))
+      return 'validator.email'.tr;
+    else
+      return null;
+  }
+
   String? password(String? value) {
     String pattern = r'^.{6,}$';
     RegExp regex = RegExp(pattern);
