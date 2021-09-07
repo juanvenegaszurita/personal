@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:personal/controllers/private/chart_controller.dart';
-import 'package:personal/ui/components/form_vertical_spacing.dart';
 import 'package:personal/ui/components/menu.dart';
 import 'package:personal/helpers/general.dart';
 import 'package:personal/ui/components/dropdown_picker.dart';
 import 'package:personal/ui/components/all_chart.dart';
+import 'package:responsive_grid/responsive_grid.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:math';
 
@@ -43,29 +43,55 @@ class ChartUI extends StatelessWidget {
 
   filtro() {
     return GetBuilder<ChartController>(
-      builder: (controller) => Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      builder: (controller) => ResponsiveGridRow(
         children: [
-          DropdownPicker(
-            menuOptions: aniosMOM,
-            selectedOption: controller.currentAnio,
-            onChanged: (value) async {
-              controller.updateAnio(value!);
-            },
+          ResponsiveGridCol(
+            lg: 4,
+            md: 6,
+            xs: 12,
+            child: DropdownPicker(
+              marginButtom: 10,
+              marginTop: 10,
+              marginLeft: 10,
+              marginRight: 10,
+              menuOptions: aniosMOM,
+              selectedOption: controller.currentAnio,
+              onChanged: (value) async {
+                controller.updateAnio(value!);
+              },
+            ),
           ),
-          DropdownPicker(
-            menuOptions: propietarioMOM,
-            selectedOption: controller.currentPropietario,
-            onChanged: (value) async {
-              controller.updatePropietario(value!);
-            },
+          ResponsiveGridCol(
+            lg: 4,
+            md: 6,
+            xs: 12,
+            child: DropdownPicker(
+              marginButtom: 10,
+              marginTop: 10,
+              marginLeft: 10,
+              marginRight: 10,
+              menuOptions: propietarioMOM,
+              selectedOption: controller.currentPropietario,
+              onChanged: (value) async {
+                controller.updatePropietario(value!);
+              },
+            ),
           ),
-          DropdownPicker(
-            menuOptions: mesesMOM,
-            selectedOption: controller.currentMes,
-            onChanged: (value) async {
-              controller.updateMes(value!);
-            },
+          ResponsiveGridCol(
+            lg: 4,
+            md: 6,
+            xs: 12,
+            child: DropdownPicker(
+              marginButtom: 10,
+              marginTop: 10,
+              marginLeft: 10,
+              marginRight: 10,
+              menuOptions: mesesMOM,
+              selectedOption: controller.currentMes,
+              onChanged: (value) async {
+                controller.updateMes(value!);
+              },
+            ),
           ),
         ],
       ),
@@ -79,21 +105,55 @@ class ChartUI extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             var dataFinal = snapshot.data as Map<String, dynamic>;
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('chart.monthly'.tr),
-                  makeBarChartTotales(context, data: dataFinal["totales"]),
-                  FormVerticalSpace(),
-                  Text('chart.accounts'.tr),
-                  makeBarChartTotalCuentas(
-                    context,
-                    data: dataFinal["totalCuentas"],
-                    keyCuentas: dataFinal["keyCuentas"],
+            return ResponsiveGridRow(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                ResponsiveGridCol(
+                  lg: 6,
+                  md: 6,
+                  xs: 12,
+                  child: Container(
+                    margin: EdgeInsets.only(
+                      bottom: 60,
+                      top: 20,
+                      left: 20,
+                      right: 20,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('chart.monthly'.tr),
+                        makeBarChartTotales(context,
+                            data: dataFinal["totales"]),
+                      ],
+                    ),
                   ),
-                ],
-              ),
+                ),
+                ResponsiveGridCol(
+                  lg: 6,
+                  md: 6,
+                  xs: 12,
+                  child: Container(
+                    margin: EdgeInsets.only(
+                      bottom: 60,
+                      top: 20,
+                      left: 20,
+                      right: 20,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('chart.accounts'.tr),
+                        makeBarChartTotalCuentas(
+                          context,
+                          data: dataFinal["totalCuentas"],
+                          keyCuentas: dataFinal["keyCuentas"],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             );
           } else if (snapshot.hasError) {
             return Text("${snapshot.error}");

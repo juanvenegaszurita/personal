@@ -56,13 +56,16 @@ class SettingsUI extends StatelessWidget {
     return GetBuilder<LanguageController>(
       builder: (controller) => ListTile(
         title: Text('settings.language'.tr),
-        trailing: DropdownPicker(
-          menuOptions: Globals.languageOptions,
-          selectedOption: controller.currentLanguage,
-          onChanged: (value) async {
-            await controller.updateLanguage(value!);
-            Get.forceAppUpdate();
-          },
+        trailing: SizedBox(
+          width: 310,
+          child: DropdownPicker(
+            menuOptions: Globals.languageOptions,
+            selectedOption: controller.currentLanguage,
+            onChanged: (value) async {
+              await controller.updateLanguage(value!);
+              Get.forceAppUpdate();
+            },
+          ),
         ),
       ),
     );

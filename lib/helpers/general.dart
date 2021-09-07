@@ -82,6 +82,7 @@ List<Color> availableColors = [
 ];
 
 List<String> titlePassword = [
+  "Grupo",
   "Nombre",
   "Usuario",
   "Clave",

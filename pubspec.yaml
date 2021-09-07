@@ -47,6 +47,7 @@ dependencies:
   recase: ^4.0.0
   fl_chart: ^0.36.1
   ninja: ^3.0.2
+  responsive_grid: ^2.0.0
 
 dev_dependencies:
   flutter_test:

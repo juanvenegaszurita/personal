@@ -7,6 +7,7 @@ import 'package:personal/models/password_model.dart';
 import 'package:personal/ui/components/components.dart';
 import 'package:personal/ui/components/menu.dart';
 import 'package:personal/helpers/general.dart' show titlePassword;
+import 'package:responsive_grid/responsive_grid.dart';
 
 class PasswordUI extends StatelessWidget {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -56,52 +57,120 @@ class PasswordUI extends StatelessWidget {
           child: Container(
             child: Column(
               children: [
-                FormInputFieldWithIcon(
-                  controller: controller.nameController,
-                  iconPrefix: Icons.account_box,
-                  labelText: 'password.name'.tr,
-                  validator: Validator().name,
-                  onChanged: (value) => null,
-                  onSaved: null,
+                ResponsiveGridRow(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    ResponsiveGridCol(
+                      xl: 3,
+                      lg: 4,
+                      md: 6,
+                      xs: 12,
+                      child: DropdownPicker(
+                        marginButtom: 5,
+                        marginTop: 5,
+                        marginLeft: 5,
+                        marginRight: 5,
+                        menuOptions: controller.groups,
+                        selectedOption: controller.currentGroup,
+                        onChanged: (value) {
+                          controller.updateGroup(value!);
+                        },
+                        isExpanded: false,
+                      ),
+                    ),
+                    ResponsiveGridCol(
+                      xl: 3,
+                      lg: 4,
+                      md: 6,
+                      xs: 12,
+                      child: FormInputFieldWithIcon(
+                        marginButtom: 5,
+                        marginTop: 5,
+                        marginLeft: 5,
+                        marginRight: 5,
+                        controller: controller.nameController,
+                        iconPrefix: Icons.account_box,
+                        labelText: 'password.name'.tr,
+                        validator: Validator().name,
+                        onChanged: (value) => null,
+                        onSaved: null,
+                      ),
+                    ),
+                    ResponsiveGridCol(
+                      xl: 3,
+                      lg: 4,
+                      md: 6,
+                      xs: 12,
+                      child: FormInputFieldWithIcon(
+                        marginButtom: 5,
+                        marginTop: 5,
+                        marginLeft: 5,
+                        marginRight: 5,
+                        controller: controller.userController,
+                        iconPrefix: Icons.person,
+                        labelText: 'password.user'.tr,
+                        validator: null,
+                        onChanged: (value) => null,
+                        onSaved: null,
+                      ),
+                    ),
+                    ResponsiveGridCol(
+                      xl: 3,
+                      lg: 4,
+                      md: 6,
+                      xs: 12,
+                      child: FormInputFieldWithIcon(
+                        marginButtom: 5,
+                        marginTop: 5,
+                        marginLeft: 5,
+                        marginRight: 5,
+                        controller: controller.emailController,
+                        iconPrefix: Icons.email,
+                        labelText: 'password.email'.tr,
+                        validator: Validator().emailEmpty,
+                        keyboardType: TextInputType.emailAddress,
+                        onChanged: (value) => null,
+                        onSaved: null,
+                      ),
+                    ),
+                    ResponsiveGridCol(
+                      xl: 3,
+                      lg: 4,
+                      md: 6,
+                      xs: 12,
+                      child: FormInputFieldWithIcon(
+                        marginButtom: 5,
+                        marginTop: 5,
+                        marginLeft: 5,
+                        marginRight: 5,
+                        controller: controller.passwordController,
+                        iconPrefix: Icons.password,
+                        labelText: 'password.password'.tr,
+                        validator: null,
+                        onChanged: (value) => null,
+                        onSaved: null,
+                      ),
+                    ),
+                    ResponsiveGridCol(
+                      xl: 3,
+                      lg: 4,
+                      md: 6,
+                      xs: 12,
+                      child: FormInputFieldWithIcon(
+                        marginButtom: 5,
+                        marginTop: 5,
+                        marginLeft: 5,
+                        marginRight: 5,
+                        controller: controller.detailsController,
+                        iconPrefix: Icons.details,
+                        labelText: 'password.details'.tr,
+                        validator: null,
+                        onChanged: (value) => null,
+                        onSaved: null,
+                      ),
+                    ),
+                  ],
                 ),
-                FormVerticalSpace(),
-                FormInputFieldWithIcon(
-                  controller: controller.userController,
-                  iconPrefix: Icons.person,
-                  labelText: 'password.user'.tr,
-                  validator: null,
-                  onChanged: (value) => null,
-                  onSaved: null,
-                ),
-                FormVerticalSpace(),
-                FormInputFieldWithIcon(
-                  controller: controller.emailController,
-                  iconPrefix: Icons.email,
-                  labelText: 'password.email'.tr,
-                  validator: Validator().emailEmpty,
-                  keyboardType: TextInputType.emailAddress,
-                  onChanged: (value) => null,
-                  onSaved: null,
-                ),
-                FormVerticalSpace(),
-                FormInputFieldWithIcon(
-                  controller: controller.passwordController,
-                  iconPrefix: Icons.password,
-                  labelText: 'password.password'.tr,
-                  validator: null,
-                  onChanged: (value) => null,
-                  onSaved: null,
-                ),
-                FormVerticalSpace(),
-                FormInputFieldWithIcon(
-                  controller: controller.detailsController,
-                  iconPrefix: Icons.details,
-                  labelText: 'password.details'.tr,
-                  validator: null,
-                  onChanged: (value) => null,
-                  onSaved: null,
-                ),
-                FormVerticalSpace(),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -171,6 +240,11 @@ class PasswordUI extends StatelessWidget {
 
         data.forEach((element) {
           List<DataCell> dataCell = [
+            DataCell(
+              Text(element.group),
+              onLongPress: () =>
+                  Clipboard.setData(new ClipboardData(text: element.group)),
+            ),
             DataCell(
               Text(element.name),
               onLongPress: () =>

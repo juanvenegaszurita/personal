@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 // get
 import 'package:get/get.dart';
@@ -8,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 // personal
 import 'package:personal/controllers/auth_controller.dart';
+import 'package:personal/models/menu_option_model.dart';
 // model
 import 'package:personal/models/password_model.dart';
 // other
@@ -30,6 +29,19 @@ class PasswordController extends GetxController {
   TextEditingController passwordController = TextEditingController();
   TextEditingController detailsController = TextEditingController();
 
+  // groups init
+  List<MenuOptionsModel> groups = [
+    MenuOptionsModel(key: "", value: "Seleccionar Grupo"),
+  ];
+  final group = "".obs;
+  String get currentGroup => group.value;
+
+  updateGroup(String value) {
+    group.value = value;
+    update(['loadingData']);
+  }
+  // groups end
+
   List<PasswordModel> _allDataPassword = [];
   final dataPassword = [].obs;
 
@@ -37,6 +49,7 @@ class PasswordController extends GetxController {
 
   PasswordModel get dataForm => PasswordModel(
         id: idController.text,
+        group: currentGroup,
         name: nameController.text,
         user: userController.text,
         email: emailController.text,
@@ -47,6 +60,7 @@ class PasswordController extends GetxController {
 
   @override
   void onReady() async {
+    await streamFirestoreGroups();
     streamFirestorePassword().listen((event) {
       _allDataPassword = event;
       filterDataPassword(filterController.text);
@@ -67,7 +81,9 @@ class PasswordController extends GetxController {
 
   filterDataPassword(String filter) {
     List<PasswordModel> dataFinal = _allDataPassword
-        .where((password) => password.name.contains(filter))
+        .where((password) =>
+            "${password.group} ${password.name} ${password.user} ${password.email} ${password.details}"
+                .contains(filter))
         .toList();
     updateDataPassword(dataFinal);
   }
@@ -77,6 +93,7 @@ class PasswordController extends GetxController {
         .collection('dataPassword')
         .doc(authController.firebaseUser.value!.uid)
         .collection("data")
+        .orderBy("group")
         .snapshots()
         .map((event) => event.docs.map((e) {
               Map<String, dynamic> finalData = e.data();
@@ -90,6 +107,20 @@ class PasswordController extends GetxController {
             }).toList());
   }
 
+  Future<void> streamFirestoreGroups() async {
+    DocumentSnapshot<Map<String, dynamic>> data = await _db
+        .collection('dataPassword')
+        .doc(authController.firebaseUser.value!.uid)
+        .get();
+    if (data.exists) {
+      Map<String, dynamic>? finalData = data.data();
+      List<dynamic> groupsFB = finalData!['GROUPS'];
+      var a =
+          (groupsFB.map((e) => MenuOptionsModel(key: e, value: e))).toList();
+      groups.addAll(a);
+    }
+  }
+
   void editPassword(PasswordModel password) {
     idController.text = password.id;
     nameController.text = password.name;
@@ -97,6 +128,7 @@ class PasswordController extends GetxController {
     emailController.text = password.email;
     passwordController.text = password.password;
     detailsController.text = password.details;
+    updateGroup(password.group);
   }
 
   Future<bool> deletePassword(PasswordModel password) async {
@@ -144,6 +176,7 @@ class PasswordController extends GetxController {
     emailController.clear();
     passwordController.clear();
     detailsController.clear();
+    updateGroup("");
     update(["password"]);
   }
 }

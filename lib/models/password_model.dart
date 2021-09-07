@@ -1,5 +1,6 @@
 class PasswordModel {
   final String id;
+  final String group;
   final String name;
   final String user;
   final String email;
@@ -8,6 +9,7 @@ class PasswordModel {
 
   PasswordModel({
     required this.id,
+    required this.group,
     required this.name,
     required this.user,
     required this.email,
@@ -18,6 +20,7 @@ class PasswordModel {
   factory PasswordModel.fromMap(Map data) {
     return PasswordModel(
       id: data['id'],
+      group: data['group'],
       name: data['name'],
       user: data['user'] ?? '',
       email: data['email'] ?? '',
@@ -28,6 +31,7 @@ class PasswordModel {
 
   PasswordModel.fromJson(Map<String, dynamic> json)
       : id = json['id'],
+        group = json['group'],
         name = json['name'],
         user = json['user'],
         email = json['email'],
@@ -35,6 +39,7 @@ class PasswordModel {
         details = json['details'];
 
   Map<String, dynamic> toJson() => {
+        'group': group,
         'name': name,
         'user': user,
         'email': email,
