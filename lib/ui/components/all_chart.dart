@@ -61,9 +61,7 @@ class MakeBarChart extends StatelessWidget {
     Color? colorFont = Colors.white,
   }) {
     return BarChartData(
-      barTouchData: BarTouchData(
-        enabled: true,
-      ),
+      barTouchData: BarTouchData(enabled: true),
       titlesData: FlTitlesData(
         show: true,
         bottomTitles: SideTitles(
@@ -76,7 +74,7 @@ class MakeBarChart extends StatelessWidget {
           margin: 55,
           getTitles: (double value) {
             String str = "";
-            if (titulos.length > 0)
+            if (titulos.length > 0 && value.toInt() < titulos.length)
               str = titulos[value.toInt()].length > 10
                   ? ReCase(titulos[value.toInt()].substring(0, 10)).titleCase +
                       "..."
@@ -91,9 +89,7 @@ class MakeBarChart extends StatelessWidget {
           interval: interval,
         ),
       ),
-      borderData: FlBorderData(
-        show: true,
-      ),
+      borderData: FlBorderData(show: true),
       barGroups: barChartGroupData,
     );
   }

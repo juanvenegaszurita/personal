@@ -83,6 +83,11 @@ class AuthController extends GetxController {
         (documentSnapshot) => UserModel.fromMap(documentSnapshot.data()!));
   }
 
+  Future<List<UserModel>> getFirestoreUsers() async {
+    var users = await _db.collection('users').get();
+    return users.docs.map((e) => UserModel.fromMap(e.data())).toList();
+  }
+
   //Method to handle user sign in using email and password
   signInWithEmailAndPassword(BuildContext context) async {
     showLoadingIndicator();
@@ -253,5 +258,23 @@ class AuthController extends GetxController {
     emailController.clear();
     passwordController.clear();
     return _auth.signOut();
+  }
+
+  // utils
+  Future<List<MenuOptionsModel>> userList() async {
+    List<MenuOptionsModel> propietarioList = [];
+    if (admin.value) {
+      List<UserModel> users = await getFirestoreUsers();
+      users.forEach((user) {
+        propietarioList.add(MenuOptionsModel(key: user.uid, value: user.name));
+      });
+    } else {
+      propietarioList = [
+        /* MenuOptionsModel(key: "", value: "general.selectowner".tr), */
+        MenuOptionsModel(
+            key: firestoreUser.value!.uid, value: firestoreUser.value!.name)
+      ];
+    }
+    return propietarioList;
   }
 }

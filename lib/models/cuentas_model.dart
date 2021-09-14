@@ -1,29 +1,29 @@
 class CuentasModel {
   final String id;
   final String nombre;
-  final List<int> valor;
+  final List<int> montos;
 
   CuentasModel({
     required this.id,
     required this.nombre,
-    required this.valor,
+    required this.montos,
   });
 
   factory CuentasModel.fromMap(Map data) {
     return CuentasModel(
       id: data['id'],
       nombre: data['nombre'],
-      valor: data['valor'].cast<int>(),
+      montos: data['montos'].cast<int>(),
     );
   }
 
   CuentasModel.fromJson(Map<String, dynamic> json)
       : id = json['id'],
         nombre = json['nombre'],
-        valor = json['valor'];
+        montos = json['montos'];
 
   Map<String, dynamic> toJson() => {
         'nombre': nombre,
-        'valor': valor,
+        'montos': montos,
       };
 }

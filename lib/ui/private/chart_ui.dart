@@ -31,7 +31,8 @@ class ChartUI extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   filtro(),
-                  futureBuilder(),
+                  //futureBuilder(),
+                  loadingData(context)
                 ],
               ),
             ),
@@ -70,7 +71,7 @@ class ChartUI extends StatelessWidget {
               marginTop: 10,
               marginLeft: 10,
               marginRight: 10,
-              menuOptions: propietarioMOM,
+              menuOptions: controller.propietarioList,
               selectedOption: controller.currentPropietario,
               onChanged: (value) async {
                 controller.updatePropietario(value!);
@@ -98,70 +99,63 @@ class ChartUI extends StatelessWidget {
     );
   }
 
-  futureBuilder() {
+  loadingData(context) {
     return GetBuilder<ChartController>(
-      builder: (controller) => FutureBuilder(
-        future: controller.getCuenta(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            var dataFinal = snapshot.data as Map<String, dynamic>;
-            return ResponsiveGridRow(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                ResponsiveGridCol(
-                  lg: 6,
-                  md: 6,
-                  xs: 12,
-                  child: Container(
-                    margin: EdgeInsets.only(
-                      bottom: 60,
-                      top: 20,
-                      left: 20,
-                      right: 20,
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text('chart.monthly'.tr),
-                        makeBarChartTotales(context,
-                            data: dataFinal["totales"]),
-                      ],
-                    ),
+      builder: (controller) {
+        if (controller.currentDataCuentas.length > 0) {
+          return ResponsiveGridRow(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              ResponsiveGridCol(
+                lg: 6,
+                md: 6,
+                xs: 12,
+                child: Container(
+                  margin: EdgeInsets.only(
+                    bottom: 60,
+                    top: 20,
+                    left: 20,
+                    right: 20,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('chart.monthly'.tr),
+                      makeBarChartTotales(context,
+                          data: controller.currentDataCuentas["totales"]),
+                    ],
                   ),
                 ),
-                ResponsiveGridCol(
-                  lg: 6,
-                  md: 6,
-                  xs: 12,
-                  child: Container(
-                    margin: EdgeInsets.only(
-                      bottom: 60,
-                      top: 20,
-                      left: 20,
-                      right: 20,
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text('chart.accounts'.tr),
-                        makeBarChartTotalCuentas(
-                          context,
-                          data: dataFinal["totalCuentas"],
-                          keyCuentas: dataFinal["keyCuentas"],
-                        ),
-                      ],
-                    ),
+              ),
+              ResponsiveGridCol(
+                lg: 6,
+                md: 6,
+                xs: 12,
+                child: Container(
+                  margin: EdgeInsets.only(
+                    bottom: 60,
+                    top: 20,
+                    left: 20,
+                    right: 20,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('chart.accounts'.tr),
+                      makeBarChartTotalCuentas(
+                        context,
+                        data: controller.currentDataCuentas["totalCuentas"],
+                        keyCuentas: controller.currentDataCuentas["keyCuentas"],
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            );
-          } else if (snapshot.hasError) {
-            return Text("${snapshot.error}");
-          }
-          // By default, show a loading spinner.
+              ),
+            ],
+          );
+        } else
           return CircularProgressIndicator();
-        },
-      ),
+      },
     );
   }
 

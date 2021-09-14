@@ -1,7 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:personal/controllers/auth_controller.dart';
 import 'package:personal/helpers/general.dart';
-import 'package:personal/service/accounts_service.dart';
+import 'package:personal/models/cuentas_model.dart';
+import 'package:personal/models/menu_option_model.dart';
 import 'package:personal/ui/components/all_chart.dart';
 import 'package:fl_chart/fl_chart.dart';
 
@@ -9,52 +11,58 @@ class ChartController extends GetxController {
   static ChartController to = Get.find();
   final AuthController authController = AuthController.to;
 
+  // Firebase user one-time fetch
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+
   final anio = DateTime.now().year.toString().obs;
   final propietario = "".obs;
   final mes = "".obs;
+  final dataCuentas = Map<String, dynamic>().obs;
 
   String get currentAnio => anio.value;
   String get currentPropietario => propietario.value;
   String get currentMes => mes.value;
+  Map<String, dynamic> get currentDataCuentas => dataCuentas.value;
+
+  List<MenuOptionsModel> propietarioList = [];
 
   @override
-  void onReady() {
-    updatePropietario(authController.firestoreUser.value!.owner);
+  void onReady() async {
+    propietarioList = await authController.userList();
+    updatePropietario(authController.firestoreUser.value!.uid);
+    listenCuentas();
 
     super.onReady();
   }
 
-  Future<Map<String, dynamic>> getCuenta() async {
+  listenCuentas() {
+    streamFirestoreCuentas().listen((event) {
+      updateDataCuentas(getCuenta(event));
+    });
+  }
+
+  Map<String, dynamic> getCuenta(List<CuentasModel> cuentas) {
     List<int> totales = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     List<String> keyCuentas = [];
     List<int> totalCuentas = [];
-    try {
-      Map<String, dynamic> data = await AccountsService.getCuentas(
-        anio: anio.value,
-        propietario: propietario.value,
-        mes: titulos.indexOf(mes.value),
-      );
-
-      data.forEach((keyData, valueData) {
-        Map<String, dynamic> cuentas = valueData as Map<String, dynamic>;
-        int total = 0;
-        cuentas.forEach((nombreCuentas, valueCuentas) {
-          keyCuentas.add(nombreCuentas);
-          List<dynamic> cuentas = valueCuentas as List<dynamic>;
-          cuentas.asMap().forEach((index, element) {
-            Map<String, dynamic> cuenta = element as Map<String, dynamic>;
-            int monto = cuenta['MONTO'].runtimeType == 'int'
-                ? cuenta['MONTO']
-                : cuenta['MONTO'].toInt();
-            total += monto;
-            totales[index] += monto;
-          });
+    var mesNum = titulos.indexOf(mes.value) - 1;
+    cuentas.forEach((cuenta) {
+      int total = 0;
+      keyCuentas.add(cuenta.nombre);
+      if (mesNum < 0) {
+        cuenta.montos.asMap().forEach((index, monto) {
+          totales[index] += monto;
+          total += monto;
         });
-        totalCuentas.add(total);
-      });
-    } catch (e) {
-      print("Error AccountsController => getCuenta\n ${e.toString()}");
-    }
+      } else {
+        int monto = cuenta.montos[mesNum];
+        totales[mesNum] += monto;
+        total += monto;
+      }
+
+      totalCuentas.add(total);
+    });
+
     return {
       "keyCuentas": keyCuentas,
       "totalCuentas": totalCuentas,
@@ -64,16 +72,21 @@ class ChartController extends GetxController {
 
   updateAnio(String value) {
     anio.value = value;
-    update(['chart']);
+    listenCuentas();
   }
 
   updatePropietario(String value) {
     propietario.value = value;
-    update(['chart']);
+    listenCuentas();
   }
 
   updateMes(String value) {
     mes.value = value;
+    listenCuentas();
+  }
+
+  updateDataCuentas(Map<String, dynamic> value) {
+    dataCuentas.value = value;
     update(['chart']);
   }
 
@@ -91,5 +104,19 @@ class ChartController extends GetxController {
     });
 
     return dataFinal;
+  }
+
+  // Firebase
+  Stream<List<CuentasModel>> streamFirestoreCuentas() {
+    return _db
+        .collection("cuentas")
+        .doc(propietario.value)
+        .collection(anio.value)
+        .snapshots()
+        .map((event) => event.docs.map((e) {
+              Map<String, dynamic> finalData = e.data();
+              finalData['id'] = e.id;
+              return CuentasModel.fromMap((finalData));
+            }).toList());
   }
 }

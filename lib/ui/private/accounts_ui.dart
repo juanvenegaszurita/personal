@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:personal/models/cuentas_model.dart';
 import 'package:personal/ui/components/dropdown_picker.dart';
 import 'package:personal/ui/components/menu.dart';
 import 'package:personal/controllers/private/accounts_controller.dart';
@@ -32,20 +33,12 @@ class AccountsUI extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   filtros(),
+                  FormVerticalSpace(),
+                  addCuenta(context),
+                  FormVerticalSpace(),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
-                    child: FutureBuilder(
-                      future: controller.getCuenta(),
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          return tableCuentas(context, snapshot.data);
-                        } else if (snapshot.hasError) {
-                          return Text("${snapshot.error}");
-                        }
-                        // By default, show a loading spinner.
-                        return CircularProgressIndicator();
-                      },
-                    ),
+                    child: loadingData(context),
                   ),
                 ],
               ),
@@ -85,7 +78,7 @@ class AccountsUI extends StatelessWidget {
               marginTop: 10,
               marginLeft: 10,
               marginRight: 10,
-              menuOptions: propietarioMOM,
+              menuOptions: controller.propietarioList,
               selectedOption: controller.currentPropietario,
               onChanged: (value) async {
                 controller.updatePropietario(value!);
@@ -113,7 +106,23 @@ class AccountsUI extends StatelessWidget {
     );
   }
 
-  tableCuentas(context, data) {
+  loadingData(context) {
+    return GetBuilder<AccountsController>(
+      id: "loadingData",
+      builder: (controller) {
+        if (controller.currentLoading) {
+          return CircularProgressIndicator();
+        } else if (controller.currentDataCuentas.length > 0) {
+          List<CuentasModel> data =
+              controller.currentDataCuentas as List<CuentasModel>;
+          return tableCuentas(context, data);
+        } else
+          return Center(child: Text('general.noData'.tr));
+      },
+    );
+  }
+
+  tableCuentas(context, List<CuentasModel> data) {
     return GetBuilder<AccountsController>(
       id: "tableCuentas",
       builder: (controller) {
@@ -146,45 +155,34 @@ class AccountsUI extends StatelessWidget {
         }
 
         // data table
-        data.forEach((keyData, valueData) {
+        data.forEach((cuenta) {
           List<DataCell> dataCell = [];
-          Map<String, dynamic> cuentas = valueData as Map<String, dynamic>;
-          int total = 0;
+          int total = cuenta.montos.reduce((a, b) => a + b);
 
-          cuentas.forEach((keyCuentas, valueCuentas) {
-            dataCell.add(
-              dataCellColor(
-                context,
-                true,
-                ReCase(keyCuentas).titleCase,
-              ),
-            );
-            List<dynamic> cuentas = valueCuentas as List<dynamic>;
-            cuentas.asMap().forEach((index, element) {
-              Map<String, dynamic> cuenta = element as Map<String, dynamic>;
-              int monto = cuenta['MONTO'].runtimeType == 'int'
-                  ? cuenta['MONTO']
-                  : cuenta['MONTO'].toInt();
-              total += monto;
-              totales[index] += monto;
-              String srtMonto = "\$ " + f.format(monto);
-              Map<String, dynamic> dataEdit = {
-                "id": cuenta['ID'],
-                "key": keyData,
-                "mes": (index + 1),
-                "anio": controller.currentAnio,
-                "monto": "",
-              };
-
-              if (indexMes == -1) {
+          dataCell.add(
+            dataCellColor(
+              context,
+              true,
+              ReCase(cuenta.nombre).titleCase,
+              idDelete: cuenta.id,
+              controller: controller,
+            ),
+          );
+          cuenta.montos.asMap().forEach((index, monto) {
+            String srtMonto = "\$ " + f.format(monto);
+            totales[index] += monto;
+            Map<String, dynamic> dataEdit = {
+              "cuenta": cuenta,
+              "mes": index,
+            };
+            if (indexMes == -1) {
+              dataCell.add(dataCellColor(context, false, srtMonto,
+                  dataEdit: dataEdit, controller: controller));
+            } else {
+              if ((index + 1) == indexMes)
                 dataCell.add(dataCellColor(context, false, srtMonto,
                     dataEdit: dataEdit, controller: controller));
-              } else {
-                if ((index + 1) == indexMes)
-                  dataCell.add(dataCellColor(context, false, srtMonto,
-                      dataEdit: dataEdit, controller: controller));
-              }
-            });
+            }
           });
 
           if (indexMes == -1) {
@@ -243,6 +241,7 @@ class AccountsUI extends StatelessWidget {
     String dato, {
     Map<String, dynamic>? dataEdit,
     AccountsController? controller,
+    String idDelete = "",
   }) {
     bool isAdmin = controller?.authController.admin.value != null
         ? controller!.authController.admin.value
@@ -259,45 +258,42 @@ class AccountsUI extends StatelessWidget {
       showEditIcon: isAdmin,
       onLongPress: () {
         if (isAdmin && dataEdit != null) {
-          // delete
-          if (dataEdit["id"] != "") {
-            dialog(
-              context: context,
-              title: 'accounts.delete'.tr,
-              content: Text('accounts.questionDelete'.tr),
-              onPressed: () async =>
-                  await controller.deleteCuenta(id: dataEdit["id"].toString()),
-            );
-          } else {
-            dialog(
-              context: context,
-              title: 'accounts.insert'.tr,
-              content: Container(
-                height: 100,
-                child: Column(
-                  children: [
-                    FormVerticalSpace(),
-                    TextField(
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'general.amount'.tr,
-                      ),
-                      onChanged: (value) {
-                        controller.updateMonto(value);
-                      },
-                      keyboardType: TextInputType.number,
+          // modificar
+          dialog(
+            context: context,
+            title: 'accounts.edit'.tr,
+            content: Container(
+              height: 100,
+              child: Column(
+                children: [
+                  FormVerticalSpace(),
+                  TextField(
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'general.amount'.tr,
                     ),
-                  ],
-                ),
+                    onChanged: (value) {
+                      controller.updateMonto(value);
+                      CuentasModel cuenta = dataEdit['cuenta'] as CuentasModel;
+                      cuenta.montos[dataEdit['mes']] = int.parse(value);
+                      dataEdit['cuenta'] = cuenta;
+                      print(dataEdit);
+                    },
+                    keyboardType: TextInputType.number,
+                  ),
+                ],
               ),
-              onPressed: () async => await controller.insertCuenta(
-                id: dataEdit["key"],
-                anio: dataEdit["anio"],
-                mes: dataEdit["mes"],
-                monto: controller.currentMonto,
-              ),
-            );
-          }
+            ),
+            onPressed: () async =>
+                await controller.updateCuenta(cuenta: dataEdit['cuenta']),
+          );
+        } else if (idDelete != "") {
+          dialog(
+            context: context,
+            title: 'accounts.delete'.tr,
+            content: Text('accounts.questionDelete'.tr),
+            onPressed: () async => await controller!.deleteCuenta(idDelete),
+          );
         }
       },
     );
@@ -330,6 +326,66 @@ class AccountsUI extends StatelessWidget {
               },
             ),
           ],
+        );
+      },
+    );
+  }
+
+  addCuenta(context) {
+    String id = "";
+    String nombre = "";
+    return GetBuilder<AccountsController>(
+      id: "addCuentas",
+      builder: (controller) {
+        return Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints.tightFor(width: 100, height: 40),
+            child: ElevatedButton(
+              child: Icon(Icons.add),
+              onPressed: () {
+                dialog(
+                  context: context,
+                  title: 'accounts.insert'.tr,
+                  content: Container(
+                    height: 150,
+                    child: Column(
+                      children: [
+                        FormVerticalSpace(),
+                        TextField(
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: 'accounts.id'.tr,
+                          ),
+                          onChanged: (value) {
+                            id = value;
+                          },
+                          keyboardType: TextInputType.number,
+                        ),
+                        FormVerticalSpace(),
+                        TextField(
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: 'accounts.name'.tr,
+                          ),
+                          onChanged: (value) {
+                            nombre = value;
+                          },
+                          keyboardType: TextInputType.number,
+                        ),
+                      ],
+                    ),
+                  ),
+                  onPressed: () async => await controller.addCuenta(
+                    cuenta: new CuentasModel(
+                      id: id,
+                      nombre: nombre,
+                      montos: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
         );
       },
     );
