@@ -15,6 +15,14 @@ For help getting started with Flutter, view our
 [online documentation](https://flutter.dev/docs), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
 
+# build
+
+```bash
+  flutter build web
+  flutter build apk
+  # /build/app/outputs/apk/release/
+```
+
  ```dart
 
   /* Future<bool> deletePassword(PasswordModel password) async {
@@ -55,3 +63,4 @@ samples, guidance on mobile development, and a full API reference.
       });
   } */
  ```
+ 

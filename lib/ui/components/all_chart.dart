@@ -85,7 +85,7 @@ class MakeBarChart extends StatelessWidget {
         ),
         leftTitles: SideTitles(
           showTitles: true,
-          getTextStyles: (double value) => TextStyle(color: Colors.white),
+          getTextStyles: (double value) => TextStyle(color: colorFont),
           interval: interval,
         ),
       ),
