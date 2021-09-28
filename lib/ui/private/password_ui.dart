@@ -167,6 +167,7 @@ class PasswordUI extends StatelessWidget {
                         validator: null,
                         onChanged: (value) => null,
                         onSaved: null,
+                        keyboardType: TextInputType.multiline,
                       ),
                     ),
                   ],
