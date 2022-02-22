@@ -80,6 +80,7 @@ class AccountsController extends GetxController {
         .collection("cuentas")
         .doc(propietario.value)
         .collection(anio.value)
+        .orderBy('nombre')
         .snapshots()
         .map((event) => event.docs.map((e) {
               Map<String, dynamic> finalData = e.data();

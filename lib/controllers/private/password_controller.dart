@@ -83,7 +83,8 @@ class PasswordController extends GetxController {
     List<PasswordModel> dataFinal = _allDataPassword
         .where((password) =>
             "${password.group} ${password.name} ${password.user} ${password.email} ${password.details}"
-                .contains(filter))
+                .toUpperCase()
+                .contains(filter.toUpperCase()))
         .toList();
     updateDataPassword(dataFinal);
   }
